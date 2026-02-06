@@ -1,0 +1,7 @@
+print false == false;
+print nil == false;
+print 0 == false;     // should be false
+print "" == false;    // should be false
+
+if (0) print "0 is truthy";
+if ("") print "empty string is truthy";

@@ -1,0 +1,9 @@
+print nil == nil;
+print nil != nil;
+
+print 1 == 1.0;
+print "a" == "a";
+print "a" == "A";
+
+print 1 == "1";   // false
+print false == 0; // false

@@ -1,0 +1,5 @@
+fun noReturn() {
+  var x = 123;
+}
+
+print noReturn(); // should print nil

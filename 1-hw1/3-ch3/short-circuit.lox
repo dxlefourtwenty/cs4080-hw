@@ -1,0 +1,7 @@
+fun explode() {
+  print "boom";
+  return true;
+}
+
+print false and explode(); // should NOT print "boom"
+print true or explode();   // should NOT print "boom"

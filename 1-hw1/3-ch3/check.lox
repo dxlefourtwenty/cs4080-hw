@@ -1,0 +1,6 @@
+fun f(a, b) {
+  print a + b;
+}
+
+f(1);       // error
+f(1, 2, 3); // error
