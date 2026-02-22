@@ -13,7 +13,3 @@ public Object visitVariableExpr(Expr.Variable expr) {
   }
   return value;
 }
-```
-
-```
-```
