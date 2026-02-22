@@ -11,8 +11,8 @@ public String visitVariableExpr(Expr.Variable expr) {
 public String visitAssignExpr(Expr.Assign expr) {
   return parenthesize("assign " + expr.name.lexeme, expr.value);
 }
-```
 
+```
 ### RpnPrinter.java
 ```
 @Override
@@ -24,8 +24,8 @@ public String visitVariableExpr(Expr.Variable expr) {
 public String visitAssignExpr(Expr.Assign expr) {
   return expr.value.accept(this) + " " + expr.name.lexeme + " =";
 }
-```
 
+```
 ### GenerateAst.java
 ```
 defineAst(outputDir, "Expr", Arrays.asList(
@@ -39,7 +39,7 @@ defineAst(outputDir, "Expr", Arrays.asList(
       "Variable    : Token name" // added for ch8-q1
     ));
 
-    defineAst(outputDir, "Stmt", Arrays.asList(
+defineAst(outputDir, "Stmt", Arrays.asList(
       "Block      : List<Stmt> statements", // added for ch8-q1
       "Expression : Expr expression",
       "Print      : Expr expression",
@@ -127,14 +127,6 @@ private boolean foundExpression = false; // added for ch8-q1
 
     return statements;
   }
-```
-```
-```
-```
-
-```
-```
-```
 ```
 ```
 ```
