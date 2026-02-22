@@ -50,46 +50,46 @@ defineAst(outputDir, "Stmt", Arrays.asList(
 ### Interpeter.java
 ```
 // added for ch8-q1
-  String interpret(Expr expression) {
-    try {
-      Object value = evaluate(expression);
-      return stringify(value);
-    } catch (RuntimeError error) {
-      Lox.runtimeError(error);
-      return null;
-    }
+String interpret(Expr expression) {
+  try {
+    Object value = evaluate(expression);
+    return stringify(value);
+  } catch (RuntimeError error) {
+    Lox.runtimeError(error);
+    return null;
   }
+}
 ```
 
 ### Lox.java
 ```
 // modified for ch8-q1
-  private static void runPrompt() throws IOException {
-    InputStreamReader input = new InputStreamReader(System.in);
-    BufferedReader reader = new BufferedReader(input);
+private static void runPrompt() throws IOException {
+  InputStreamReader input = new InputStreamReader(System.in);
+  BufferedReader reader = new BufferedReader(input);
 
-    for (;;) {
-      hadError = false;
+  for (;;) {
+    hadError = false;
 
-      System.out.print("> ");
-      Scanner scanner = new Scanner(reader.readLine());
-      List<Token> tokens = scanner.scanTokens();
+    System.out.print("> ");
+    Scanner scanner = new Scanner(reader.readLine());
+    List<Token> tokens = scanner.scanTokens();
 
-      Parser parser = new Parser(tokens);
-      Object syntax = parser.parseRepl();
+    Parser parser = new Parser(tokens);
+    Object syntax = parser.parseRepl();
 
-      // if there's a syntax error, skip
-      if (hadError) continue;
+    // if there's a syntax error, skip
+    if (hadError) continue;
 
-      if (syntax instanceof List) {
-        interpreter.interpret((List<Stmt>)syntax);
-      } else if (syntax instanceof Expr) {
-        String result = interpreter.interpret((Expr)syntax);
-        if (result != null) {
-          System.out.println("= " + result);
-        }
+    if (syntax instanceof List) {
+      interpreter.interpret((List<Stmt>)syntax);
+    } else if (syntax instanceof Expr) {
+      String result = interpreter.interpret((Expr)syntax);
+      if (result != null) {
+        System.out.println("= " + result);
       }
     }
+  }
 ```
 
 ### Parser.java
@@ -98,33 +98,33 @@ private boolean allowExpressions; // added for ch8-q1
 private boolean foundExpression = false; // added for ch8-q1
 
 // modified for ch8-q1
-  private Stmt expressionStatement() {
-    Expr expr = expression();
+private Stmt expressionStatement() {
+  Expr expr = expression();
 
-    if (allowExpressions && isAtEnd()) {
-      foundExpression = true;
-    } else {
-      consume(SEMICOLON, "Expect ';' after expression.");
-    }
-    return new Stmt.Expression(expr);
+  if (allowExpressions && isAtEnd()) {
+    foundExpression = true;
+  } else {
+    consume(SEMICOLON, "Expect ';' after expression.");
   }
+  return new Stmt.Expression(expr);
+}
 
 // added for ch8-q1
-  Object parseRepl() {
-    foundExpression = false;
-    allowExpressions = true;
-    List<Stmt> statements = new ArrayList<>();
-    while (!isAtEnd()) {
-      statements.add(declaration());
+Object parseRepl() {
+  foundExpression = false;
+  allowExpressions = true;
+  List<Stmt> statements = new ArrayList<>();
+  while (!isAtEnd()) {
+    statements.add(declaration());
 
-      if (foundExpression) {
-        Stmt last = statements.get(statements.size() - 1);
-        return ((Stmt.Expression) last).expression;
-      }
-
-      allowExpressions = false;
+    if (foundExpression) {
+      Stmt last = statements.get(statements.size() - 1);
+      return ((Stmt.Expression) last).expression;
     }
 
-    return statements;
+    allowExpressions = false;
   }
+
+  return statements;
+}
 ```
