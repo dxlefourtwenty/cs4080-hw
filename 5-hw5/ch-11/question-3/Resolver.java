@@ -214,8 +214,7 @@ class Resolver implements Expr.Visitor<Void>, Stmt.Visitor<Void> {
   }
 
   private void beginScope() {
-    scopes.push(new HashMap<String, Boolean>());
-    scopeNextIndex.push(0);
+    scopes.push(new HashMap<String, Variable>());
   }
 
   private void endScope() {
@@ -248,8 +247,8 @@ class Resolver implements Expr.Visitor<Void>, Stmt.Visitor<Void> {
   private void resolveLocal(Expr expr, Token name) {
     for (int i = scopes.size() - 1; i >= 0; i--) {
       if (scopes.get(i).containsKey(name.lexeme)) {
-        Variable variable = scopes.get(i).get(name.lexeme);
-        interpreter.resolve(expr, scopes.size() - 1 - i, variable.index);
+        scopes.get(i).get(name.lexeme).state = VariableState;
+        interpreter.resolve(expr, scopes.size() - 1 - i);
         return;
       }
     }
