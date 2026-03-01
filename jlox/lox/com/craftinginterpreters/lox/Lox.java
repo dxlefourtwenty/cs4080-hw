@@ -6,6 +6,7 @@ import java.io.InputStreamReader;
 import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.util.ArrayList;
 import java.util.List;
 
 public class Lox {
@@ -38,7 +39,9 @@ public class Lox {
       hadError = false;
 
       System.out.print("> ");
-      Scanner scanner = new Scanner(reader.readLine());
+      String line = reader.readLine();
+      if (line == null) break;
+      Scanner scanner = new Scanner(line);
       List<Token> tokens = scanner.scanTokens();
 
       Parser parser = new Parser(tokens);
@@ -47,8 +50,18 @@ public class Lox {
       // if there's a syntax error, skip
       if (hadError) continue;
 
-      if (syntax instanceof List) {
-        interpreter.interpret((List<Stmt>)syntax);
+      if (syntax instanceof List<?> parsed) {
+        List<Stmt> statements = new ArrayList<>(parsed.size());
+        for (Object item : parsed) {
+          if (!(item instanceof Stmt)) {
+            statements = null;
+            break;
+          }
+          statements.add((Stmt) item);
+        }
+        if (statements != null) {
+          interpreter.interpret(statements);
+        }
       } else if (syntax instanceof Expr) {
         String result = interpreter.interpret((Expr)syntax);
         if (result != null) {
@@ -66,6 +79,12 @@ public class Lox {
     List<Stmt> statements = parser.parse();
 
     // Stop if there was a syntax error
+    if (hadError) return;
+
+    Resolver resolver = new Resolver(interpreter);
+    resolver.resolve(statements);
+
+    // Stop if there was a resolution error
     if (hadError) return;
 
     interpreter.interpret(statements);

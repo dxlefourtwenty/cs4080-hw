@@ -33,6 +33,7 @@ class Parser {
 
   private Stmt declaration() {
     try {
+      if (match(VAR)) return function("function");
       if (match(VAR)) return varDeclaration();
 
       return statement();
@@ -67,7 +68,6 @@ class Parser {
     return new Stmt.Var(name, initializer);
   }
 
-  // modified for ch8-q1
   private Stmt expressionStatement() {
     Expr expr = expression();
 

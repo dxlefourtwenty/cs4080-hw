@@ -11,6 +11,7 @@ abstract class Expr {
     R visitLogicalExpr(Logical expr);
     R visitUnaryExpr(Unary expr);
     R visitConditionalExpr(Conditional expr);
+    R visitFunctionExpr(Function expr);
     R visitCallExpr(Call expr);
     R visitVariableExpr(Variable expr);
   }
@@ -113,6 +114,20 @@ abstract class Expr {
     final Expr condition;
     final Expr thenBranch;
     final Expr elseBranch;
+  }
+  static class Function extends Expr {
+    Function(List<Token> parameters, List<Stmt> body) {
+      this.parameters = parameters;
+      this.body = body;
+    }
+
+    @Override
+    <R> R accept(Visitor<R> visitor) {
+      return visitor.visitFunctionExpr(this);
+    }
+
+    final List<Token> parameters;
+    final List<Stmt> body;
   }
   static class Call extends Expr {
     Call(Expr callee, Token paren, List<Expr> arguments) {
