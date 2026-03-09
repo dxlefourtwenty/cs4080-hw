@@ -36,6 +36,7 @@ class Parser {
 
   private Stmt declaration() {
     try {
+      if (match(CLASS)) return classDeclaration();
       if (check(FUN) && checkNext(IDENTIFIER)) {
         consume(FUN, null);
         return function("Function");
@@ -47,6 +48,34 @@ class Parser {
       synchronize();
       return null;
     }
+  }
+
+  private Stmt classDeclaration() {
+    Token name = consume(IDENTIFIER, "Expect class name.");
+    List<Expr.Variable> superclasses = new ArrayList<>();
+
+    if (match(LESS)) {
+      do {
+        consume(IDENTIFIER, "Expect superclass name.");
+        superclasses.add(new Expr.Variable(previous()));
+      } while (match(COMMA));
+    }
+
+    consume(LEFT_BRACE, "Expect '{' before class body.");
+
+    List<Stmt.Function> methods = new ArrayList<>();
+    List<Stmt.Function> classMethods = new ArrayList<>();
+    while (!check(RIGHT_BRACE) && !isAtEnd()) {
+      if (match(CLASS)) {
+        classMethods.add(function("method"));
+      } else {
+        methods.add(function("method"));
+      }
+    }
+
+    consume(RIGHT_BRACE, "Expect '}' after class body.");
+
+    return new Stmt.Class(name, superclasses, methods, classMethods);
   }
 
   private Stmt statement() {
@@ -188,7 +217,29 @@ class Parser {
 
   private Stmt.Function function(String kind) {
     Token name = consume(IDENTIFIER, "Expect " + kind + " name.");
-    return new Stmt.Function(name, functionBody(kind));
+
+    // Allow omitting parameter list for method getters
+    List<Token> parameters = null;
+
+    // Only require parens if NOT a method, OR if parens are actually present
+    if (!kind.equals("method") || check(LEFT_PAREN))  {
+      consume(LEFT_PAREN, "Expect '(' after " + kind + " name.");
+      parameters = new ArrayList<>();
+      if (!check(RIGHT_PAREN)) {
+        do {
+          if (parameters.size() >= 255) {
+            error(peek(), "Can't have more than 255 parameters.");
+          }
+
+          parameters.add(consume(IDENTIFIER, "Expect parameter name."));
+        } while (match(COMMA));
+      }
+      consume(RIGHT_PAREN, "Expect ')' after parameters.");
+    }
+
+    consume(LEFT_BRACE, "Expect '{' before " + kind + " body.");
+    List<Stmt> body = block();
+    return new Stmt.Function(name, new Expr.Function(parameters, body));
   }
 
   private Expr.Function functionBody(String kind) {
@@ -232,6 +283,9 @@ class Parser {
       if (expr instanceof Expr.Variable) {
         Token name = ((Expr.Variable)expr).name;
         return new Expr.Assign(name, value);
+      } else if (expr instanceof Expr.Get) {
+        Expr.Get get = (Expr.Get)expr;
+        return new Expr.Set(get.object, get.name, value);
       }
 
       error(equals, "Invalid assignment target."); 
@@ -340,6 +394,10 @@ class Parser {
     while (true) {
       if (match(LEFT_PAREN)) {
         expr = finishCall(expr);
+      } else if (match(DOT)) {
+        Token name = consume(IDENTIFIER,
+            "Expect property name after '.'.");
+        expr = new Expr.Get(expr, name);
       } else {
         break;
       }
@@ -357,6 +415,10 @@ class Parser {
     if (match(NUMBER, STRING)) {
       return new Expr.Literal(previous().literal);
     }
+
+    if (match(THIS)) return new Expr.This(previous());
+
+    if (match(INNER)) return new Expr.Inner(previous()); 
 
     if (match(IDENTIFIER)) {
       return new Expr.Variable(previous());

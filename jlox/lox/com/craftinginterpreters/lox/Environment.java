@@ -7,8 +7,6 @@ class Environment {
   final Environment enclosing;
   private final Map<String, Object> values = new HashMap<>();
 
-  private final List<Object> slots = new ArrayList<>();
-
   Environment() {
     enclosing = null;
   }
@@ -45,7 +43,6 @@ class Environment {
 
   void define(String name, Object value) {
     values.put(name, value);
-    slots.add(value); 
   }
 
   Environment ancestor(int distance) {
@@ -59,10 +56,6 @@ class Environment {
 
   Object getAt(int distance, String name) {
     return ancestor(distance).values.get(name);
-  }
-
-  Object getAtIndex(int distance, int index) {
-    return ancestor(distance).slots.get(index);
   }
 
   void assignAt(int distance, Token name, Object value) {
