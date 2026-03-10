@@ -96,7 +96,7 @@ java.util.List<LoxFunction> findMethodChain(String name) {
 }
 ```
 
-### New file: LoxMethodChain.java
+### LoxMethodChain.java
 ```
 package com.craftinginterpreters.lox;
 
