@@ -1,8 +1,25 @@
-#include <stdlib.h>
-#include "chunk.h"
-#include "memory.h"
-#include "value.h"
+### chunk.h
+```
+typedef struct {
+  int offset;
+  int line;
+} LineStart;
 
+typedef struct {
+  int count;
+  int capacity;
+  uint8_t* code;
+  ValueArray constants;
+  int lineCount;
+  int lineCapacity;
+  LineStart* lines;
+} Chunk;
+
+int getLine(Chunk* chunk, int instruction);
+```
+
+### chunk.c
+```
 void initChunk(Chunk* chunk) {
   chunk->count = 0;
   chunk->capacity = 0;
@@ -13,10 +30,13 @@ void initChunk(Chunk* chunk) {
   initValueArray(&chunk->constants); 
 }
 
-// see if the current array already has capacity for
-// the new byte. if it doesn't, then we first need to grow
-// the array to make room
-// we also hit on this case when the array is NULL and capacity = 0
+void freeChunk(Chunk* chunk) {
+  FREE_ARRAY(uint8_t, chunk->code, chunk->capacity);
+  FREE_ARRAY(LineStart, chunk->lines, chunk->lineCapacity);
+  freeValueArray(&chunk->constants);
+  initChunk(chunk);
+}
+
 void writeChunk(Chunk* chunk, uint8_t byte, int line) {
   if (chunk->capacity < chunk->count + 1) {
     int oldCapacity = chunk->capacity;
@@ -45,20 +65,6 @@ void writeChunk(Chunk* chunk, uint8_t byte, int line) {
   lineStart->line = line;
 }
 
-int addConstant(Chunk* chunk, Value value) {
-  writeValueArray(&chunk->constants, value);
-  return chunk->constants.count - 1;
-}
-
-// deallocate all of the memory and then call initChunk() to zero out
-// the fields leaving the chunk in a well-defined empty state
-void freeChunk(Chunk* chunk) {
-  FREE_ARRAY(uint8_t, chunk->code, chunk->capacity);
-  FREE_ARRAY(LineStart, chunk->lines, chunk->lineCapacity);
-  freeValueArray(&chunk->constants);
-  initChunk(chunk);
-}
-
 int getLine(Chunk* chunk, int instruction) {
   int start = 0;
   int end = chunk->lineCount - 1;
@@ -75,3 +81,4 @@ int getLine(Chunk* chunk, int instruction) {
     }
   }
 }
+```
