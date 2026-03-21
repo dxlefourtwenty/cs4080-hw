@@ -14,11 +14,9 @@ CFLAGS := -std=c17 -g3 -O0 \
 	-fno-omit-frame-pointer -fsanitize=address,undefined
 LDFLAGS := -fsanitize=address,undefined
 
-.PHONY: all run hardcore-test hardcore-run clean
+.PHONY: all hardcore-test hardcore-run clean
 
-all: run
-
-run: $(TARGET)
+all: $(TARGET)
 
 hardcore-test: $(HARDCORE_TEST)
 

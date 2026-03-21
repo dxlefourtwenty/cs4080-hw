@@ -1,31 +1,32 @@
-#include <stdio.h>
+### chunk.h
+```
+typedef enum {
+  OP_CONSTANT,
+  OP_CONSTANT_LONG,
+  OP_RETURN,
+} OpCode;
 
-#include "debug.h"
-#include "value.h"
+void writeConstant(Chunk* chunk, Value value, int line);
+```
 
-void disassembleChunk(Chunk* chunk, const char* name) {
-  printf("== %s ==\n", name);
-
-  for (int offset = 0; offset < chunk->count;) {
-    offset = disassembleInstruction(chunk, offset);
+### chunk.c
+```
+void writeConstant(Chunk* chunk, Value value, int line) {
+  int index = addConstant(chunk, value);
+  if (index < 256) {
+    writeChunk(chunk, OP_CONSTANT, line);
+    writeChunk(chunk, (uint8_t)index, line);
+  } else {
+    writeChunk(chunk, OP_CONSTANT_LONG, line);
+    writeChunk(chunk, (uint8_t)(index & 0xeff), line);
+    writeChunk(chunk, (uint8_t)((index >> 8) & 0xff), line);
+    writeChunk(chunk, (uint8_t)((index >> 16) & 0xff), line);
   }
 }
+```
 
-static int constantInstruction(const char* name, Chunk* chunk,
-                               int offset) {
-  uint8_t constant = chunk->code[offset + 1];
-  printf("%-16s %4d '", name, constant);
-  printValue(chunk->constants.values[constant]);
-  printf("'\n");
-
-  return offset + 2;
-}
-
-static int simpleInstruction(const char* name, int offset) {
-  printf("%s\n", name);
-  return offset + 1;
-}
-
+### debug.c
+```
 static int longConstantInstruction(const char* name, Chunk* chunk,
                                    int offset) {
   uint32_t constant = chunk->code[offset + 1] |
@@ -63,3 +64,4 @@ int disassembleInstruction(Chunk* chunk, int offset) {
       return offset + 1;
   }
 }
+```

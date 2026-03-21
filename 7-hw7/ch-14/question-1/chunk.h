@@ -18,14 +18,6 @@ typedef enum {
 // at the moment, this is simply a wrapper around an array of bytes
 // this is dynamic because we don't know how big the array needs to be before we start compiling a chunk
 typedef struct {
-  int count;
-  int capacity;
-  uint8_t* code;
-  int* lines;
-  ValueArray constants; 
-} Chunk;
-
-typedef struct {
   int offset;
   int line;
 } LineStart;
